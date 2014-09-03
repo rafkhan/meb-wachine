@@ -1,0 +1,23 @@
+{
+  "name": "meb-wachine",
+  "version": "0.0.0",
+  "description": "WebMachine implementation <3",
+  "main": "meb.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rafkhan/meb-wachine"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rafkhan/meb-wachine/issues"
+  },
+  "homepage": "https://github.com/rafkhan/meb-wachine",
+  "dependencies": {
+    "lodash": "^2.4.1",
+    "director": "^1.2.3"
+  }
+}
