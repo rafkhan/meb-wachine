@@ -50,6 +50,29 @@ explain how a webmachine works.
 ##Documentation
 It's coming, I swear!
 
+###The Default WebMachine
+
+```javascript
+{
+  knownMethods: _.values(httpMethods),
+  allowedMethods: [httpMethods.GET],
+
+  uriTooLarge: function(req) {
+    if(req.url.length > 4096) {
+      return true;
+    }
+    return false;
+  },
+
+  authorized: function() { return true; },
+  forbidden: function() { return false; },
+  tooLarge: function() { return false; },
+  exists: function() { return true; },
+  existedPreviously: function() { return false; },
+  permitPostToMissingResource: true
+}
+```
+
 
 ##Todo
 ...also coming soon
