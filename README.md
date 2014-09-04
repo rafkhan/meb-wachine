@@ -10,16 +10,18 @@ for node.js <3
 ##Usage
 
 ```javascript
-var meb = require('package-name');
+var Meb = require('meb-wachine');
+
+var app = new Meb();
 
 // Hello resource!
-meb.resource({
+app.resource({
   path: '/hello',
   handleOk: function(req, ctx) {
     return {hello: 'world!'};
   }
 });
 
-meb.createServer().listen('3800');
+app.getServer().listen('3800');
 ```
 
