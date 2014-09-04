@@ -3,6 +3,8 @@ var http     = require('http');
 var director = require('director');
 var httpStatusToDescription = require('http-status-to-description');
 
+var httpMethods = require('./lib/methods');
+var decisions = require('./lib/decisions');
 
 //
 // Resource parameters
@@ -17,32 +19,41 @@ var httpStatusToDescription = require('http-status-to-description');
 //   - List of HTTP methods allowed on a resource.
 //     i.e: [oldmeb.methods.GET, 'POST', ...]
 //
-// - isAuthorized:
+// - authorized:
 //   - Function
 //   - Predicate that determines whether a request is authorized
 //     to access a specific resource
 //
-// - isForbidden
-// - isTooLarge (url)
+// - forbidden (fn predicate)
+// - uriTooLarge (url too large) (fn predicate)
+// - exists (fn predicate)
+// - existedPreviously (fn predicate)
+// - permitPostToMissingResource (bool, default true)
 //
 
 
-var methods  = {
-  GET: 'GET',
-  DELETE: 'DELETE',
-  OPTIONS: 'OPTIONS',
-  PATCH: 'PATCH',
-  POST: 'POST',
-  PUT: 'PUT'
-};
+var defaultWM = {
+  knownMethods: _.values(httpMethods),
+  allowedMethods: [httpMethods.GET],
 
+  uriTooLarge: function(req) {
+    if(req.url.length > 4096) {
+      return true;
+    }
+    return false;
+  },
+
+  authorized: function() { return true; },
+  forbidden: function() { return false; },
+  tooLarge: function() { return false; }, //FIXME
+  exists: function() { return true; },
+  existedPreviously: function() { return false; },
+  permitPostToMissingResource: true
+};
 
 var mebApp = function() {
   var $meb = this;
   $meb.routeMap = {};
-
-  $meb.methods = methods;
-
 
   //
   // TODO: 400 - Malformed?
@@ -50,59 +61,6 @@ var mebApp = function() {
   // 415 Unsupported media type
   // 413 Request Entity Too Large
   //
-  $meb.decisions = {
-    unknownMethod: function(machine, req) {
-      var knownMethods = machine.knownMethods || _.values($meb.methods);
-      if(_.contains(knownMethods, req.method)) {
-        return false;
-      }
-      return true;
-    },
-
-    uriTooLong: function(machine, req) {
-      if(req.url.length > 4096) {
-        return true;
-      }
-
-    },
-
-    methodAllowed: function(machine, req) {
-      var allowedMethods = machine.allowedMethods || [$meb.methods.GET];
-      if(_.contains(allowedMethods, req.method)) {
-        return true;
-      }
-
-      return false;
-    },
-
-    authorized: function(machine, req) {
-      var authFn = machine.isAuthorized;
-      if(authFn) {
-        return authFn();
-      }
-
-      return true;
-    },
-
-    forbidden: function(machine, req) {
-      var forbidFn = machine.isForbidden;
-      if(forbidFn) {
-        return forbidFn();
-      }
-
-      return false;
-    },
-
-    tooLarge: function(machine, req) {
-      var sizeFn = machine.isTooLarge;
-      if(sizeFn) {
-        return sizeFn();
-      }
-      
-      //FIXME
-      return false;
-    }
-  };
 
   function writeErr(res, code) {
     var msg = httpStatusToDescription(code);
@@ -118,40 +76,38 @@ var mebApp = function() {
           res = this.res;
 
       // Known Method?
-      if($meb.decisions.unknownMethod(machine, req)) {
+      if(decisions.unknownMethod(machine.knownMethods, req)) {
         writeErr(res, 501);
         return;
       }
 
       // URI too long?
-      if($meb.decisions.uriTooLong(machine, req)) {
-        res.writeHead(414); // 414 - Request URI too long
-        res.end();
+      if(machine.uriTooLarge(req)) {
+        writeErr(res, 414); // 414 - Request URI too long
         return;
       }
 
       // Method Allowed?
-      if(!$meb.decisions.methodAllowed(machine, req)) {
-        res.writeHead(405); // 405 - Method Not Allowed
-        res.end();
+      if(!decisions.methodAllowed(machine.allowedMethods, req)) {
+        writeErr(res, 405); // 405 - Method Not Allowed
         return;
       }
 
-      if(!$meb.decisions.authorized(machine, req)) {
-        res.writeHead(401); // 401 - Unauthorized
-        res.end();
+      // Authorized?
+      if(!machine.authorized(req)) {
+        writeErr(res, 401); // 401 - Unauthorized
         return;
       }
 
-      if($meb.decisions.forbidden(machine, req)) {
-        res.writeHead(403); // 403 - Forbidden
-        res.end();
+      // Forbidden?
+      if(machine.forbidden(req)) {
+        writeErr(res, 403); // 403 - Forbidden
         return;
       }
 
-      //
+      // OPTIONS?
       // DEFAULTS TO handleOK
-      if(req.method === $meb.methods.OPTIONS) {
+      if(req.method === httpMethods.OPTIONS) {
         if(machine.options) {
           machine.options(req, res);
           return;
@@ -162,9 +118,34 @@ var mebApp = function() {
       }
 
 
+      //*********************************
+      // Accept-* handling should go here
+      //*********************************
+      
+      // Reource exists?
+      if(!machine.exists(req)) {
+        //TODO if match exists -> 412
+
+        if(req.method === httpMethods.PUT) {
+          //TODO this
+        } else {
+          if(machine.existedPreviously(req)) {
+            //TODO existed prev
+          } else {
+            if(req.method === httpMethods.POST) {
+              if(machine.permitPostToMissingResource){
+                //TODO this
+              }
+            }
+          }
+        }
+
+        res.writeErr(404);
+        return;
+      }
 
 
-      if(req.method === $meb.methods.GET) {
+      if(req.method === httpMethods.GET) {
         machine.handleOk(req, res);
         return;
       }
@@ -174,6 +155,17 @@ var mebApp = function() {
   // returns `this`
   $meb.resource = function(machine) {
     // Add current webmachine to available routes
+    
+    // Copy webmachine, adding default values when necessary
+    var keys = Object.keys(defaultWM);
+    keys.forEach(function(k) {
+      if(defaultWM.hasOwnProperty(k)) {
+        if(!machine.hasOwnProperty(k)) {
+          machine[k] = defaultWM[k];
+        }
+      }
+    });
+
     $meb.routeMap[machine.path] = {
       // Attach to all HTTP methods
       // FIXME: include the rest of the methods
@@ -202,7 +194,7 @@ var mebApp = function() {
 
 };
 
-mebApp.methods = methods;
+mebApp.methods = httpMethods;
 
 exports = module.exports = mebApp;
 
