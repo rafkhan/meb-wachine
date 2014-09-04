@@ -16,7 +16,7 @@ var app = new Meb();
 
 // Hello resource!
 app.resource({
-  path: '/hello',
+  path: '/ping',
   allowedMethods: [Meb.methods.GET],
   handleOk: function(req, res) { //this API WILL change
     res.write('pong');
