@@ -1,88 +1,7 @@
-'use strict';
-
 var _        = require('lodash');
 var http     = require('http');
 var director = require('director');
 var httpStatusToDescription = require('http-status-to-description');
-
-/*
-var oldmeb = {};
-var routeMap = {};
-
-oldmeb.methods = {
-  GET: 'GET',
-  DELETE: 'DELETE',
-  OPTIONS: 'OPTIONS',
-  PATCH: 'PATCH',
-  POST: 'POST',
-  PUT: 'PUT'
-};
-
-function getReqBodySize() {
-  return 2048;
-}
-
-function writeErr(res, code) {
-  var msg = httpStatusToDescription(code);
-  res.writeHead(code);
-  res.write(msg);
-  res.end();
-}
-
-var decisions = {
-  unknownMethod: function(machine, req) {
-    var knownMethods = machine.knownMethods || _.values(oldmeb.methods);
-    if(_.contains(knownMethods, req.method)) {
-      return false;
-    }
-    return true;
-  },
-
-  uriTooLong: function(machine, req) {
-    if(req.url.length > 4096) {
-      return true;
-    }
-    return false;
-  },
-
-  methodAllowed: function(machine, req) {
-    var allowedMethods = machine.allowedMethods || [oldmeb.methods.GET];
-    if(_.contains(allowedMethods, req.method)) {
-      return true;
-    }
-
-    return false;
-  },
-
-  authorized: function(machine, req) {
-    var authFn = machine.isAuthorized;
-    if(authFn) {
-      return authFn();
-    }
-
-    return true;
-  },
-
-  forbidden: function(machine, req) {
-    var forbidFn = machine.isForbidden;
-    if(forbidFn) {
-      return forbidFn();
-    }
-
-    return false;
-  },
-
-  tooLarge: function(machine, req) {
-    var sizeFn = machine.isTooLarge;
-    if(sizeFn) {
-      return sizeFn();
-    }
-    
-    return getReqBodySize() < 9000;
-  }
-};
-
-
 
 
 //
@@ -106,23 +25,31 @@ var decisions = {
 // - isForbidden
 // - isTooLarge (url)
 //
-*/
 
+
+var methods  = {
+  GET: 'GET',
+  DELETE: 'DELETE',
+  OPTIONS: 'OPTIONS',
+  PATCH: 'PATCH',
+  POST: 'POST',
+  PUT: 'PUT'
+};
 
 
 var mebApp = function() {
   var $meb = this;
   $meb.routeMap = {};
 
-  $meb.methods = {
-    GET: 'GET',
-    DELETE: 'DELETE',
-    OPTIONS: 'OPTIONS',
-    PATCH: 'PATCH',
-    POST: 'POST',
-    PUT: 'PUT'
-  };
+  $meb.methods = methods;
 
+
+  //
+  // TODO: 400 - Malformed?
+  // 501 (not impl) Unknown or unsupported header
+  // 415 Unsupported media type
+  // 413 Request Entity Too Large
+  //
   $meb.decisions = {
     unknownMethod: function(machine, req) {
       var knownMethods = machine.knownMethods || _.values($meb.methods);
@@ -136,7 +63,7 @@ var mebApp = function() {
       if(req.url.length > 4096) {
         return true;
       }
-      return false;
+
     },
 
     methodAllowed: function(machine, req) {
@@ -222,25 +149,29 @@ var mebApp = function() {
         return;
       }
 
+      //
+      // DEFAULTS TO handleOK
       if(req.method === $meb.methods.OPTIONS) {
         if(machine.options) {
           machine.options(req, res);
+          return;
+        } else {
+          machine.handleOk(req, res);
+          return;
         }
       }
 
-      //
-      // TODO: 400 - Malformed?
-      // 501 (not impl) Unknown or unsupported header
-      // 415 Unsupported media type
-      // 413 Request Entity Too Large
-      //
+
+
 
       if(req.method === $meb.methods.GET) {
         machine.handleOk(req, res);
+        return;
       }
     };
   }
 
+  // returns `this`
   $meb.resource = function(machine) {
     // Add current webmachine to available routes
     $meb.routeMap[machine.path] = {
@@ -253,6 +184,8 @@ var mebApp = function() {
       put: runWebMachine(machine),
       delete: runWebMachine(machine)
     };
+
+    return $meb;
   };
 
   $meb.getServer = function() {
@@ -268,6 +201,8 @@ var mebApp = function() {
   };
 
 };
+
+mebApp.methods = methods;
 
 exports = module.exports = mebApp;
 

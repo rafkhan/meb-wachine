@@ -3,52 +3,24 @@ var assert = require('assert');
 var supertest = require('supertest');
 
 
-/*
-meb.resource({
-  path: '/asd/:x',
-  allowedMethods: [meb.methods.GET, meb.methods.POST],
+function tErr(err) {
+  if(err) throw err;
+}
 
-  isAuthorized: function(req) {
-    return true;
-  },
-
-  isForbidden: function(req) {
-    return false;
-  },
-
-  options: function(req, res) {
-    res.write('nice options call bro');
-    res.end();
-  },
-
-  exists: function(req) {
-    if(db.hasValue(req.params.x)) {
-      var y = db.get(x);
-      return {y: y};
+function pingResource() {
+  return {
+    path: '/ping',
+    handleOk: function(req, res) {
+      res.write("pong");
+      res.end();
     }
+  };
+}
 
-    return false;
-  },
-
-  handleOk: function(req, res) {
-    res.write('asd');
-    res.end();
-  }
-});
-*/
-
-//var server = meb.createServer();
-//server.listen('3800');
 describe('Meb Resource', function() {
   it('Should ping/pong', function() {
     var app = new Meb();
-    app.resource({
-      path: '/ping',
-      handleOk: function(req, res) {
-        res.write("pong");
-        res.end();
-      }
-    });
+    app.resource(pingResource());
     
     var server = app.getServer();
     supertest(server)
@@ -60,4 +32,60 @@ describe('Meb Resource', function() {
       });
   });
 });
+
+describe('Method Handling', function() {
+
+  it('Should disallow everything but GET by default', function() {
+    var app = new Meb();
+    app.resource(pingResource());
+    
+    var server = app.getServer();
+    var st = supertest(server);
+    st.post('/ping')
+      .expect(405)
+      .end(tErr);
+
+    st.get('/ping')
+      .expect(200)
+      .end(tErr);
+  });
+
+  it('Should allow method specification, deny the others', function() {
+    var resource = pingResource();
+    resource.allowedMethods = [Meb.methods.POST, Meb.methods.DELETE];
+
+    var app = new Meb();
+    app.resource(resource);
+    var server = app.getServer();
+    var st = supertest(server);
+
+    st.post('/ping')
+      .expect(200)
+      .end(tErr);
+
+    st.delete('/ping')
+      .expect(200)
+      .end(tErr);
+
+    st.get('/ping')
+      .expect(405)
+      .end(tErr);
+  });
+});
+
+
+//FIXME
+//map keys to status codes
+function makeTestPredicate(key, status, pred) {
+  var resource = pingResource();
+  resource[key] = pred;
+
+  var app = new Meb();
+  app.resource(resource);
+
+  st(appUnauth)
+    .get('/ping')
+    .expect(status)
+    .end(tErr);
+}
 
