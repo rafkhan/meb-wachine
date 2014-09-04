@@ -47,6 +47,13 @@ explain how a webmachine works.
 ![flo chart](https://raw.githubusercontent.com/rafkhan/meb-wachine/master/diagram.png)
 
 
+##Documentation
+It's coming, I swear!
+
+
+##Todo
+...also coming soon
+
 
 ##Testing it
 `mocha`
