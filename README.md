@@ -28,8 +28,28 @@ app.getServer().listen('3800');
 ```
 
 
+##What is this Fancy *Web Machine*?
+Well, I'm really not the best person to explain this. Check
+[this out](https://github.com/basho/webmachine/wiki) for more
+information on how Basho's webmachine implementation works.
+This library is also very similar to
+[liberator](http://clojure-liberator.github.io/liberator/),
+a webmachine implementation in clojure.
+
+
+The goal of these projects is to help expose your data in a
+declaritive way as HTTP spec compliant resources.
+These toolkits essentially allow you to override decisions
+in a graph to create HTTP responses. Sane defaults should be
+provided at each necessary step. The diagram below will help
+explain how a webmachine works.
+
+![flo chart](https://raw.githubusercontent.com/rafkhan/meb-wachine/master/diagram.png)
+
+
+
 ##Testing it
-`mocha` ayy
+`mocha`
 
 ![ayy](https://raw.githubusercontent.com/rafkhan/meb-wachine/master/boom.gif)
 
