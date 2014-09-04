@@ -17,11 +17,20 @@ var app = new Meb();
 // Hello resource!
 app.resource({
   path: '/hello',
-  handleOk: function(req, ctx) {
-    return {hello: 'world!'};
+  allowedMethods: [Meb.methods.GET],
+  handleOk: function(req, res) { //this API WILL change
+    res.write('pong');
+    res.end();
   }
 });
 
 app.getServer().listen('3800');
 ```
+
+
+##Testing it
+`mocha` ayy
+
+![ayy](https://raw.githubusercontent.com/rafkhan/meb-wachine/master/boom.gif)
+
 
