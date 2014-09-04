@@ -54,8 +54,8 @@ It's coming, I swear!
 
 ```javascript
 {
-  knownMethods: _.values(httpMethods),
-  allowedMethods: [httpMethods.GET],
+  knownMethods: ["GET", "DELETE", "OPTIONS", "PATCH", "POST", "PUT"],
+  allowedMethods: ["GET"],
 
   uriTooLarge: function(req) {
     if(req.url.length > 4096) {
