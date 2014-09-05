@@ -73,19 +73,3 @@ describe('Method Handling', function() {
   });
 });
 
-
-//FIXME
-//map keys to status codes
-function makeTestPredicate(key, status, pred) {
-  var resource = pingResource();
-  resource[key] = pred;
-
-  var app = new Meb();
-  app.resource(resource);
-
-  st(appUnauth)
-    .get('/ping')
-    .expect(status)
-    .end(tErr);
-}
-

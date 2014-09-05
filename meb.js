@@ -36,7 +36,7 @@ var defaultWM = {
   knownMethods: _.values(httpMethods),
   allowedMethods: [httpMethods.GET],
 
-  uriTooLarge: function(req) {
+  uriTooLarge: function(req) { //TODO: test this.
     if(req.url.length > 4096) {
       return true;
     }

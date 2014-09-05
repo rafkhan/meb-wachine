@@ -75,8 +75,10 @@ It's coming, I swear!
 
 
 ##Todo
-...also coming soon
-
+- Implement all defaults
+- Support for handlers other than GET (similar to liberator's `:post!`)
+- Actually write a test suite!
+- Investigate koa (or any connect) middleware integration
 
 ##Testing it
 `mocha`
