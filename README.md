@@ -79,6 +79,8 @@ It's coming, I swear!
 - Support for handlers other than GET (similar to liberator's `:post!`)
 - Actually write a test suite!
 - Investigate koa (or any connect) middleware integration
+- Encoding
+- Decoding
 
 ##Testing it
 `mocha`
