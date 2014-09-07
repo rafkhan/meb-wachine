@@ -12,7 +12,7 @@ for node.js <3
 ```javascript
 var Meb = require('meb-wachine');
 
-var app = new Meb();
+var app = new Meb.App();
 
 // Hello resource!
 app.resource({
