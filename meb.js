@@ -130,13 +130,29 @@ var mebApp = function() {
           //TODO this
         } else {
           if(machine.existedPreviously(req)) {
-            //TODO existed prev
-          } else {
-            if(req.method === httpMethods.POST) {
-              if(machine.permitPostToMissingResource){
-                //TODO this
+            if(machine.movedPermanently(req)) { // TODO doc
+              writeErr(res, 301); // 301 - Moved Permanently
+            } else {
+              if(machine.movedTemporarily(req)) { // TODO doc
+                writeErr(res, 307); // 307 - Moved Temporarily
+              } else {
+                if(req.method === Meb.methods.POST) {
+                  if(machine.permitPostToMissingResource){ // TODO doc
+                    //TODO this **
+                  } else {
+                    writeErr(res, 410); // 410 - Gone
+                  }
+                } else {
+                  writeErr(res, 410); // 410 - Gone
+                }
               }
             }
+          } else {
+            if(req.method === httpMethods.POST) {
+              if(machine.permitPostToMissingResource){ // TODO doc
+                //TODO this **
+              } // else 404
+            } // else 404
           }
         }
 
