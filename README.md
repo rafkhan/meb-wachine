@@ -48,30 +48,11 @@ explain how a webmachine works.
 
 
 ##Documentation
-It's coming, I swear!
+docs/
+
 
 ###The Default WebMachine
-
-```javascript
-{
-  knownMethods: ["GET", "DELETE", "OPTIONS", "PATCH", "POST", "PUT"],
-  allowedMethods: ["GET"],
-
-  uriTooLarge: function(req) {
-    if(req.url.length > 4096) {
-      return true;
-    }
-    return false;
-  },
-
-  authorized: function() { return true; },
-  forbidden: function() { return false; },
-  tooLarge: function() { return false; },
-  exists: function() { return true; },
-  existedPreviously: function() { return false; },
-  permitPostToMissingResource: true
-}
-```
+Check the docs :3
 
 
 ##Todo
@@ -81,6 +62,7 @@ It's coming, I swear!
 - Investigate koa (or any connect) middleware integration
 - Encoding
 - Decoding
+- ETAGS AND CACHING
 
 ##Testing it
 `mocha`

@@ -14,7 +14,6 @@ var defaultWM = require('./lib/defaultWM');
  *
  * @class MebApp
  * @memberof Meb
- * @params {x} y x
  */
 var MebApp = function() {
   var $meb = this;
@@ -84,6 +83,7 @@ var MebApp = function() {
 
 
       //*********************************
+      // TODO
       // Accept-* handling should go here
       //*********************************
       
@@ -123,6 +123,33 @@ var MebApp = function() {
 
         res.writeErr(404);
         return;
+      }
+
+      //****************************************
+      // TODO
+      // Caching, ETags, mofified since, etc, :(
+      //****************************************
+      
+      // TIME TO DELETE STUFF >:D
+      if(req.method === httpMethods.DELETE) {
+        //machines delete function,
+        var deleteFn = machine.onDelete;
+        if(!deleteFn) {
+          //No deleteFn therefore no delete enacted
+          writeErr(res, 202); // 202 - Accepted
+          return;
+        }
+
+        if(deleteFn(req)) {
+          if(machine.respondWithEntity) {
+            machine.handleOk(req, res);
+            return;
+          }
+        } else {
+          writeErr(res, 202); // 202 - Accepted
+          return;
+        }
+
       }
 
 
