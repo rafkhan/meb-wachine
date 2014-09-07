@@ -1,4 +1,5 @@
 var Meb = require('../meb');
+var MebApp = Meb.App;
 var assert = require('assert');
 var supertest = require('supertest');
 
@@ -19,7 +20,7 @@ function pingResource() {
 
 describe('Meb Resource', function() {
   it('Should ping/pong', function() {
-    var app = new Meb();
+    var app = new MebApp();
     app.resource(pingResource());
     
     var server = app.getServer();
@@ -36,7 +37,7 @@ describe('Meb Resource', function() {
 describe('Method Handling', function() {
 
   it('Should disallow everything but GET by default', function() {
-    var app = new Meb();
+    var app = new MebApp();
     app.resource(pingResource());
     
     var server = app.getServer();
@@ -54,7 +55,7 @@ describe('Method Handling', function() {
     var resource = pingResource();
     resource.allowedMethods = [Meb.methods.POST, Meb.methods.DELETE];
 
-    var app = new Meb();
+    var app = new MebApp();
     app.resource(resource);
     var server = app.getServer();
     var st = supertest(server);
