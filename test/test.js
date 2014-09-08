@@ -105,7 +105,7 @@ describe('DELETE stuff', function() {
       .end(tErr);
   });
 
-  it('Should handle onDelete that respondes with entity', function() {
+  it('Should handle onDelete that responds with entity', function() {
     var resource = pingResource();
     resource.allowedMethods = [Meb.methods.DELETE];
     resource.onDelete = function(req) { return true; };
@@ -121,6 +121,22 @@ describe('DELETE stuff', function() {
         if(err) throw err;
         assert.equal("pong", res.text);
       });
+  });
+
+  it('Should handle onDelete that does not respond with entity', function() {
+    var resource = pingResource();
+    resource.allowedMethods = [Meb.methods.DELETE];
+    resource.onDelete = function(req) { return true; };
+    resource.respondWithEntity = false;
+
+    var app = new MebApp();
+    app.resource(resource);
+    var server = app.getServer();
+    var st = supertest(server);
+
+    st.delete('/ping')
+      .expect(204)
+      .end(tErr);
   });
 });
 
