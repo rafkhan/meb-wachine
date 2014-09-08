@@ -48,8 +48,7 @@ explain how a webmachine works.
 
 
 ##Documentation
-docs/
-
+[Right here!](http://rafkhan.github.io/meb-wachine/Meb.html)
 
 ###The Default WebMachine
 Check the docs :3
