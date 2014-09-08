@@ -51,7 +51,12 @@ explain how a webmachine works.
 [Right here!](http://rafkhan.github.io/meb-wachine/Meb.html)
 
 ###The Default WebMachine
-Check the docs :3
+When you initialize a Web Machine, it will have all of these properties
+assigned by default. These are the steps in the decision graph you can
+modify.
+
+
+[I would recommend looking at this.](http://rafkhan.github.io/meb-wachine/module-defaultWM.html)
 
 
 ##Todo
