@@ -140,3 +140,20 @@ describe('DELETE stuff', function() {
   });
 });
 
+
+describe('Redirection', function() {
+  it('Should 303 on POST when redirect specified', function() {
+    var resource = pingResource();
+    resource.allowedMethods = [Meb.methods.POST];
+    resource.redirect = function() { return true; };
+
+    var app = new MebApp();
+    app.resource(resource);
+    var server = app.getServer();
+    var st = supertest(server);
+
+    st.post('/ping')
+      .expect(303)
+      .end(tErr); 
+  });
+});

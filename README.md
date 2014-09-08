@@ -67,6 +67,10 @@ modify.
 - Encoding
 - Decoding
 - ETAGS AND CACHING
+- Shared context management?
+- *It may just be my stupidity* but does webmachine not support
+  redirect on GET requests?
+
 
 ##Testing it
 `mocha`
