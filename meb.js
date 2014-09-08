@@ -142,14 +142,21 @@ var MebApp = function() {
 
         if(deleteFn(req)) {
           if(machine.respondWithEntity) {
-            machine.handleOk(req, res);
+            if(machine.hasMultipleRepresentations(req)) {
+              writeErr(res, 300); // 300 - Multiple Choices
+              return;
+            } else {
+              machine.handleOk(req, res); // 200 - Ok
+              return;
+            }
+          } else {
+            writeErr(res, 204); // 204 - No Content
             return;
           }
-        } else {
+        } else { // delete not enacted
           writeErr(res, 202); // 202 - Accepted
           return;
         }
-
       }
 
 
