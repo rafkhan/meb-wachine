@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: meb.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: meb.js</h1>
+
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** @namespace Meb */
+
+var _        = require('lodash');
+var http     = require('http');
+var director = require('director');
+var httpStatusToDescription = require('http-status-to-description');
+
+var httpMethods = require('./lib/methods');
+var decisions = require('./lib/decisions');
+var defaultWM = require('./lib/defaultWM');
+
+/**
+ * You can define resources on an instantiated MebApp
+ *
+ * @class MebApp
+ * @memberof Meb
+ */
+var MebApp = function() {
+  var $meb = this;
+  $meb.routeMap = {};
+
+  //
+  // TODO: 400 - Malformed?
+  // 501 (not impl) Unknown or unsupported header
+  // 415 Unsupported media type
+  // 413 Request Entity Too Large
+  //
+
+  function writeErr(res, code) {
+    var msg = httpStatusToDescription(code);
+    res.writeHead(code);
+    res.write(msg);
+    res.end();
+  }
+
+  function runWebMachine(machine) {
+    return function() {
+
+      var req = this.req,
+          res = this.res;
+
+      // Known Method?
+      if(decisions.unknownMethod(machine.knownMethods, req)) {
+        writeErr(res, 501);
+        return;
+      }
+
+      // URI too long?
+      if(machine.uriTooLarge(req)) {
+        writeErr(res, 414); // 414 - Request URI too long
+        return;
+      }
+
+      // Method Allowed?
+      if(!decisions.methodAllowed(machine.allowedMethods, req)) {
+        writeErr(res, 405); // 405 - Method Not Allowed
+        return;
+      }
+
+      // Authorized?
+      if(!machine.authorized(req)) {
+        writeErr(res, 401); // 401 - Unauthorized
+        return;
+      }
+
+      // Forbidden?
+      if(machine.forbidden(req)) {
+        writeErr(res, 403); // 403 - Forbidden
+        return;
+      }
+
+      // OPTIONS?
+      // DEFAULTS TO handleOK
+      if(req.method === httpMethods.OPTIONS) {
+        if(machine.options) {
+          machine.options(req, res);
+          return;
+        } else {
+          machine.handleOk(req, res);
+          return;
+        }
+      }
+
+
+      //*********************************
+      // TODO
+      // Accept-* handling should go here
+      //*********************************
+      
+      // Reource exists?
+      if(!machine.exists(req)) {
+        //TODO if match exists -> 412
+
+        if(req.method === httpMethods.PUT) {
+          //TODO this
+        } else {
+          if(machine.existedPreviously(req)) {
+            if(machine.movedPermanently(req)) { // TODO doc
+              writeErr(res, 301); // 301 - Moved Permanently
+            } else {
+              if(machine.movedTemporarily(req)) { // TODO doc
+                writeErr(res, 307); // 307 - Moved Temporarily
+              } else {
+                if(req.method === Meb.methods.POST) {
+                  if(machine.permitPostToMissingResource){ // TODO doc
+                    //TODO this **
+                  } else {
+                    writeErr(res, 410); // 410 - Gone
+                  }
+                } else {
+                  writeErr(res, 410); // 410 - Gone
+                }
+              }
+            }
+          } else {
+            if(req.method === httpMethods.POST) {
+              if(machine.permitPostToMissingResource){ // TODO doc
+                //TODO this **
+              } // else 404
+            } // else 404
+          }
+        }
+
+        res.writeErr(404);
+        return;
+      }
+
+      //****************************************
+      // TODO
+      // Caching, ETags, mofified since, etc, :(
+      //****************************************
+      
+      // TIME TO DELETE STUFF >:D
+      if(req.method === httpMethods.DELETE) {
+        //machines delete function,
+        var deleteFn = machine.onDelete;
+        if(!deleteFn) {
+          //No deleteFn therefore no delete enacted
+          writeErr(res, 202); // 202 - Accepted
+          return;
+        }
+
+        if(deleteFn(req)) {
+          if(machine.respondWithEntity) {
+            machine.handleOk(req, res);
+            return;
+          }
+        } else {
+          writeErr(res, 202); // 202 - Accepted
+          return;
+        }
+
+      }
+
+
+      if(req.method === httpMethods.GET) {
+        machine.handleOk(req, res);
+        return;
+      }
+    };
+  }
+
+  /**
+   * Define a resource on the MebApp.
+   *
+   * @function resource
+   * @memberof Meb.MebApp
+   * @param  {Object}  machine  WebMachine options.
+   * @returns Itself (current MebApp instance)
+   */
+  $meb.resource = function(machine) {
+    // Add current webmachine to available routes
+    
+    // Copy webmachine, adding default values when necessary
+    var keys = Object.keys(defaultWM);
+    keys.forEach(function(k) {
+      if(defaultWM.hasOwnProperty(k)) {
+        if(!machine.hasOwnProperty(k)) {
+          machine[k] = defaultWM[k];
+        }
+      }
+    });
+
+    $meb.routeMap[machine.path] = {
+      // Attach to all HTTP methods
+      // FIXME: include the rest of the methods
+      //        (except HEAD, look at Router.prototype.dispatch for rationale)
+      get: runWebMachine(machine),
+      patch: runWebMachine(machine),
+      post: runWebMachine(machine),
+      put: runWebMachine(machine),
+      delete: runWebMachine(machine)
+    };
+
+    return $meb;
+  };
+
+  /**
+   * Create HTTP server that routes to all created
+   * webmachine resources. Ideally this crap should become
+   * connect/koa middleware. &lt;b>APIS ARE CHANGING!&lt;/b>
+   *
+   * @function getServer
+   * @memberof Meb.MebApp
+   * @returns Node HTTP server
+   */
+  $meb.getServer = function() {
+    var router = new director.http.Router($meb.routeMap);
+
+    return http.createServer(function (req, res) {
+      router.dispatch(req, res, function(err) {
+        res.writeHead(err.status || 500);
+        res.write(JSON.stringify(err));
+        res.end();
+      });
+    });
+  };
+
+};
+
+exports = module.exports = {
+  /**
+   * Constructor for MebApp.
+   *
+   * @var App
+   * @see {@link Meb.MebApp}
+   * @memberof Meb
+   */
+  App: MebApp,
+
+  /**
+   * The default webmachine.
+   *
+   * @name Meb.defaultWM
+   * @see {@link module:defaultWM} The contains the properties of this objects
+   */
+  defaultWM: defaultWM,
+
+  /**
+   * HTTP method names.
+   *
+   * @name Meb.methods
+   * @memberof Meb
+   */
+  methods: httpMethods
+};
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-defaultWM.html">defaultWM</a></li><li><a href="module-methods.html">methods</a></li></ul><h3>Classes</h3><ul><li><a href="Meb.MebApp.html">MebApp</a></li></ul><h3>Namespaces</h3><ul><li><a href="Meb.html">Meb</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Sun Sep 07 2014 18:54:54 GMT-0400 (EDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
