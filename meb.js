@@ -1,4 +1,12 @@
-/** @namespace Meb */
+/**
+ * Welcome to the MebWachine documentation!<br />
+ * Note that I will often make reference to coordinates on
+ * <b>
+ * [this diagram]{@link https://raw.githubusercontent.com/rafkhan/meb-wachine/master/diagram.png}.
+ * </b>
+ *
+ * @namespace Meb
+ */
 
 var _        = require('lodash');
 var http     = require('http');
@@ -31,6 +39,24 @@ var MebApp = function() {
     res.writeHead(code);
     res.write(msg);
     res.end();
+  }
+
+  // SEE DIAGRAM O20
+  // This checks if the response includes an entity with potentially
+  // multiple representations. This will write and close the result stream.
+  function writeResponseWithEntityCheck(req, res, machine) {
+    if(machine.respondWithEntity) {
+      if(machine.hasMultipleRepresentations(req)) {
+        writeErr(res, 300); // 300 - Multiple Choices
+        return;
+      } else {
+        machine.handleOk(req, res); // 200 - Ok
+        return;
+      }
+    } else {
+      writeErr(res, 204); // 204 - No Content
+      return;
+    } 
   }
 
   function runWebMachine(machine) {
@@ -141,18 +167,7 @@ var MebApp = function() {
         }
 
         if(deleteFn(req)) {
-          if(machine.respondWithEntity) {
-            if(machine.hasMultipleRepresentations(req)) {
-              writeErr(res, 300); // 300 - Multiple Choices
-              return;
-            } else {
-              machine.handleOk(req, res); // 200 - Ok
-              return;
-            }
-          } else {
-            writeErr(res, 204); // 204 - No Content
-            return;
-          }
+          writeResponseWithEntityCheck(req, res, machine);
         } else { // delete not enacted
           writeErr(res, 202); // 202 - Accepted
           return;
@@ -162,6 +177,8 @@ var MebApp = function() {
       if(req.method === httpMethods.POST) {
         if(machine.redirect(req)) {
           writeErr(res, 303); // 303 - See Other
+        } else {
+          // New resource check TODO refactor this out
         }
       }
 
