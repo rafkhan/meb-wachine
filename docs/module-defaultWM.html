@@ -151,7 +151,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line140">line 140</a>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line166">line 166</a>
     </li></ul></dd>
     
 
@@ -224,7 +224,7 @@ Should not be modified.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line128">line 128</a>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line154">line 154</a>
     </li></ul></dd>
     
 
@@ -369,7 +369,7 @@ to signify that you deleted a resource.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line152">line 152</a>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line178">line 178</a>
     </li></ul></dd>
     
 
@@ -441,7 +441,7 @@ to signify that you deleted a resource.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line162">line 162</a>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line188">line 188</a>
     </li></ul></dd>
     
 
@@ -563,6 +563,149 @@ to signify that you deleted a resource.
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line38">line 38</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="conflict"><span class="type-signature">(static) </span>conflict<span class="signature">(req)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Does the request cause a conflict?
+<em>Triggers 409 - Conflict </em>
+    </div>
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>req</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Request object</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>false</li>
+        </ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line148">line 148</a>
     </li></ul></dd>
     
 
@@ -1182,6 +1325,149 @@ was modified to do otherwise.
         
             
 <dt>
+    <h4 class="name" id="newResource"><span class="type-signature">(static) </span>newResource<span class="signature">(req)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Is a new resource being created?
+<em>Triggers 201 - Created</em>
+    </div>
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>req</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Request object</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>false</li>
+        </ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line136">line 136</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
     <h4 class="name" id="redirect"><span class="type-signature">(static) </span>redirect<span class="signature">(req)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
@@ -1630,7 +1916,7 @@ Test if request is too large.
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Thu Sep 11 2014 15:29:56 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Fri Sep 12 2014 10:07:16 GMT-0400 (EDT)
 </footer>
 
 <script> prettyPrint(); </script>

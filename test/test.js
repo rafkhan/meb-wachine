@@ -31,7 +31,7 @@ function pingResource() {
 }
 
 describe('Meb Resource', function() {
-  it('Should ping/pong', function() {
+  it('Should ping/pong', function(done) {
     var app = new MebApp();
     app.resource(pingResource());
     
@@ -40,11 +40,65 @@ describe('Meb Resource', function() {
       .get('/ping')
       .expect(200)
       .end(function(err, res) {
-        if(err) throw err;
+        if(err) { done(err); }
         assert.equal("pong", res.text);
+        done();
       });
   });
 });
+
+describe('Default responses', function() {
+
+  function makeAppWithMethod(method) {
+    var app = new MebApp();
+    var resource = pingResource();
+    resource.allowedMethods = [method];
+    app.resource(resource);
+    
+    return app.getServer(); 
+  }
+
+  it('Should 200 on GET by default', function(done) {
+    supertest(makeAppWithMethod(Meb.methods.GET))
+      .get('/ping')
+      .expect(200)
+      .end(function(err, res) {
+        if(err) throw err;
+        assert.equal("pong", res.text);
+        done();
+      }); 
+  });
+
+  it('Should 200 on POST by default', function(done) {
+    supertest(makeAppWithMethod(Meb.methods.POST))
+      .post('/ping')
+      .expect(200)
+      .end(function(err, res) {
+        if(err) throw err;
+        assert.equal("pong", res.text);
+        done();
+      }); 
+  });
+
+  it('Should 200 on PUT by default', function(done) {
+    supertest(makeAppWithMethod(Meb.methods.PUT))
+      .put('/ping')
+      .expect(200)
+      .end(function(err, res) {
+        if(err) throw err;
+        assert.equal("pong", res.text);
+        done();
+      }); 
+  });
+
+  it('Should 202 on DELETE by default', function(done) {
+    supertest(makeAppWithMethod(Meb.methods.DELETE))
+      .delete('/ping')
+      .expect(202)
+      .end(tErr(done)); 
+  });
+});
+
 
 describe('Method Handling', function() {
 
@@ -181,5 +235,23 @@ describe('Redirection', function() {
     st.post('/ping')
       .expect(303)
       .end(tErr(done)); 
+  });
+});
+
+describe('New resource', function() {
+  it('Should return 201 Created', function(done) {
+    var resource = pingResource();
+    resource.allowedMethods = [Meb.methods.POST];
+    resource.newResource = function() { return true; };
+
+    var app = new MebApp();
+    app.resource(resource);
+    var server = app.getServer();
+    var st = supertest(server);
+
+    st.post('/ping')
+      .expect(201)
+      .end(tErr(done)); 
+
   });
 });

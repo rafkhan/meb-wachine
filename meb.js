@@ -35,28 +35,48 @@ var MebApp = function() {
   //
 
   function writeErr(res, code) {
-    var msg = httpStatusToDescription(code);
+    //var msg = httpStatusToDescription(code);
     res.writeHead(code);
-    res.write(msg);
+    //res.write(msg);
     res.end();
   }
 
-  // SEE DIAGRAM O20
+  // Diagram O-18
+  // Checks if an entity has multiple representations, sends 303 if so.
+  // If not, it runs handleOk.
+  function writeWithMultipleRepCheck(req, res, machine) {
+    if(machine.hasMultipleRepresentations(req)) {
+      writeErr(res, 300); // 300 - Multiple Choices
+      return;
+    } else {
+      machine.handleOk(req, res); // 200 - Ok
+      return;
+    }
+  }
+
+  // Diagram O-20
   // This checks if the response includes an entity with potentially
   // multiple representations. This will write and close the result stream.
   function writeResponseWithEntityCheck(req, res, machine) {
     if(machine.respondWithEntity) {
-      if(machine.hasMultipleRepresentations(req)) {
-        writeErr(res, 300); // 300 - Multiple Choices
-        return;
-      } else {
-        machine.handleOk(req, res); // 200 - Ok
-        return;
-      }
+      writeWithMultipleRepCheck(req, res, machine);
+      return;
     } else {
       writeErr(res, 204); // 204 - No Content
       return;
     } 
+  }
+
+  // Diagram P-11
+  function writeWithNewResourceCheck(req, res, machine) {
+    if(machine.newResource(req)) {
+      //TODO check response value should be for 201
+      writeErr(res, 201); // 201 - Created
+      return;
+    } else {
+      writeResponseWithEntityCheck(req, res, machine);
+      return;
+    }
   }
 
   function runWebMachine(machine) {
@@ -156,30 +176,49 @@ var MebApp = function() {
       // Caching, ETags, mofified since, etc, :(
       //****************************************
       
+      // Diagram M-16
       // TIME TO DELETE STUFF >:D
       if(req.method === httpMethods.DELETE) {
-        //machines delete function,
+        // machine's delete function,
         var deleteFn = machine.onDelete;
+        // Diagram M-20
         if(!deleteFn) {
-          //No deleteFn therefore no delete enacted
+          // No deleteFn therefore no delete enacted
           writeErr(res, 202); // 202 - Accepted
           return;
         }
 
         if(deleteFn(req)) {
           writeResponseWithEntityCheck(req, res, machine);
+          return;
         } else { // delete not enacted
           writeErr(res, 202); // 202 - Accepted
           return;
         }
       }
 
+      // Diagram N-16
       if(req.method === httpMethods.POST) {
         if(machine.redirect(req)) {
           writeErr(res, 303); // 303 - See Other
         } else {
-          // New resource check TODO refactor this out
+          writeWithNewResourceCheck(req, res, machine);
         }
+      }
+
+      // Diagram O-16
+      // TODO write tests
+      if(req.method === httpMethods.PUT) {
+        // Diagram O-14
+        if(machine.conflict(req)) {
+          writeErr(res, 409); // 409 - Conflict
+          return;
+        }
+
+        writeWithNewResourceCheck(req, res, machine);
+      } else {
+        writeWithMultipleRepCheck(req, res, machine);
+        return;
       }
 
 

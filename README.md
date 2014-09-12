@@ -70,7 +70,7 @@ modify.
 - Shared context management?
 - *It may just be my stupidity* but does webmachine not support
   redirect on GET requests?
-
+- **ANNOTATE ENTIRE DEFAULT WM WITH DIAGRAM COORDS**
 
 ##Testing it
 `mocha`
