@@ -151,7 +151,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line166">line 166</a>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line201">line 201</a>
     </li></ul></dd>
     
 
@@ -224,7 +224,7 @@ Should not be modified.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line154">line 154</a>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line189">line 189</a>
     </li></ul></dd>
     
 
@@ -369,7 +369,7 @@ to signify that you deleted a resource.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line178">line 178</a>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line213">line 213</a>
     </li></ul></dd>
     
 
@@ -441,7 +441,7 @@ to signify that you deleted a resource.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line188">line 188</a>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line223">line 223</a>
     </li></ul></dd>
     
 
@@ -465,6 +465,149 @@ to signify that you deleted a resource.
         <h3 class="subsection-title">Methods</h3>
 
         <dl>
+            
+<dt>
+    <h4 class="name" id="applyToDifferentUri"><span class="type-signature">(static) </span>applyToDifferentUri<span class="signature">(req)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Server desires that the request be applied to a different URI?
+<em>Triggers 301 - Moved Permanently</em>
+    </div>
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>req</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Request object</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>false</li>
+        </ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line160">line 160</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
             
 <dt>
     <h4 class="name" id="authorized"><span class="type-signature">(static) </span>authorized<span class="signature">(req)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
@@ -1325,6 +1468,292 @@ was modified to do otherwise.
         
             
 <dt>
+    <h4 class="name" id="movedPermanently"><span class="type-signature">(static) </span>movedPermanently<span class="signature">(req)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Resource moved permanently?
+<em>Triggers 301 - Moved Permanently</em>
+    </div>
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>req</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Request object</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>false</li>
+        </ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line172">line 172</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="movedTemporarily"><span class="type-signature">(static) </span>movedTemporarily<span class="signature">(req)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Resource moved temporarily?
+<em>Triggers 301 - Moved Permanently</em>
+    </div>
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>req</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Request object</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>false</li>
+        </ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="defaultWM.js.html">lib/defaultWM.js</a>, <a href="defaultWM.js.html#line185">line 185</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
     <h4 class="name" id="newResource"><span class="type-signature">(static) </span>newResource<span class="signature">(req)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
@@ -1916,7 +2345,7 @@ Test if request is too large.
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Fri Sep 12 2014 10:07:16 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Sat Sep 13 2014 02:30:29 GMT-0400 (EDT)
 </footer>
 
 <script> prettyPrint(); </script>
