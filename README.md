@@ -62,7 +62,7 @@ modify.
 ##Todo
 - Implement all defaults
 - Support for handlers other than GET (similar to liberator's `:post!`)
-- Actually write a test suite!
+- 100% test coverage
 - Investigate koa (or any connect) middleware integration
 - Encoding
 - Decoding

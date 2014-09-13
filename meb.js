@@ -134,28 +134,56 @@ var MebApp = function() {
       //*********************************
       
       // Reource exists?
+      // Diagram G-7
       if(!machine.exists(req)) {
-        //TODO if match exists -> 412
+        //TODO if match exists -> 412 (Diagram H-7)
 
+        // Diagram i-7
         if(req.method === httpMethods.PUT) {
           //TODO this
+          if(machine.applyToDifferentUri(req)) {
+            writeErr(res, 301); // 301 - Moved Permanently
+            return;
+          }
+
+          // COULD POSSIBLY REFACTOR THIS
+          if(machine.conflict(req)) {
+            writeErr(res, 409); // 409 - Conflict
+            return;
+          }
+
+          writeWithNewResourceCheck(req, res, machine);
+          return;
+
         } else {
+          // Diagram K-7
           if(machine.existedPreviously(req)) {
+            // Diagram K-5
             if(machine.movedPermanently(req)) { // TODO doc
               writeErr(res, 301); // 301 - Moved Permanently
+              return;
+            }
+
+            if(machine.movedTemporarily(req)) { // TODO doc
+              writeErr(res, 307); // 307 - Moved Temporarily
+              return;
             } else {
-              if(machine.movedTemporarily(req)) { // TODO doc
-                writeErr(res, 307); // 307 - Moved Temporarily
-              } else {
-                if(req.method === Meb.methods.POST) {
-                  if(machine.permitPostToMissingResource){ // TODO doc
-                    //TODO this **
+              if(req.method === httpMethods.POST) {
+                // Diagram N-5
+                if(machine.permitPostToMissingResource){ // TODO doc
+                  if(machine.redirect(req)) {
+                    writeErr(res, 303); // 303 - See Other
                   } else {
-                    writeErr(res, 410); // 410 - Gone
+                    writeWithNewResourceCheck(req, res, machine);
+                    return;
                   }
                 } else {
                   writeErr(res, 410); // 410 - Gone
+                  return;
                 }
+              } else {
+                writeErr(res, 410); // 410 - Gone
+                return;
               }
             }
           } else {
@@ -167,7 +195,7 @@ var MebApp = function() {
           }
         }
 
-        res.writeErr(404);
+        writeErr(res, 404);
         return;
       }
 
@@ -203,6 +231,7 @@ var MebApp = function() {
           writeErr(res, 303); // 303 - See Other
         } else {
           writeWithNewResourceCheck(req, res, machine);
+          return;
         }
       }
 
@@ -216,6 +245,7 @@ var MebApp = function() {
         }
 
         writeWithNewResourceCheck(req, res, machine);
+        return;
       } else {
         writeWithMultipleRepCheck(req, res, machine);
         return;
