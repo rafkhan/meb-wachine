@@ -159,18 +159,18 @@ var MebApp = function() {
           // Diagram K-7
           if(machine.existedPreviously(req)) {
             // Diagram K-5
-            if(machine.movedPermanently(req)) { // TODO doc
+            if(machine.movedPermanently(req)) {
               writeErr(res, 301); // 301 - Moved Permanently
               return;
             }
 
-            if(machine.movedTemporarily(req)) { // TODO doc
+            if(machine.movedTemporarily(req)) {
               writeErr(res, 307); // 307 - Moved Temporarily
               return;
             } else {
               if(req.method === httpMethods.POST) {
                 // Diagram N-5
-                if(machine.permitPostToMissingResource){ // TODO doc
+                if(machine.permitPostToMissingResource) {
                   if(machine.redirect(req)) {
                     writeErr(res, 303); // 303 - See Other
                   } else {
