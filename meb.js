@@ -229,6 +229,7 @@ var MebApp = function() {
       if(req.method === httpMethods.POST) {
         if(machine.redirect(req)) {
           writeErr(res, 303); // 303 - See Other
+          return;
         } else {
           writeWithNewResourceCheck(req, res, machine);
           return;
