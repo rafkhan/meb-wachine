@@ -1,3 +1,5 @@
+'use strict';
+
 var Meb = require('../meb');
 var MebApp = Meb.App;
 var assert = require('assert');

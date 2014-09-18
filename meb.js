@@ -79,6 +79,18 @@ var MebApp = function() {
     }
   }
 
+  function getWebMachineResponse(machine) {
+
+    var resp = runWebMachine(machine);
+  }
+
+  /*
+    * THE RETURN VALUESHOULD BE IN THE FOLLOWING FORMAT
+    * {
+    *   code: 200,
+    *   data:   {}, // empty resp body if excluded
+    * }
+    */
   function runWebMachine(machine) {
     return function() {
 
@@ -87,14 +99,12 @@ var MebApp = function() {
 
       // Known Method?
       if(decisions.unknownMethod(machine.knownMethods, req)) {
-        writeErr(res, 501);
-        return;
+        return { code: 501 };
       }
 
       // URI too long?
       if(machine.uriTooLarge(req)) {
-        writeErr(res, 414); // 414 - Request URI too long
-        return;
+        return { code: 414 }; // 414 - Request URI too long
       }
 
       // Method Allowed?
