@@ -34,21 +34,15 @@ var MebApp = function() {
   // 413 Request Entity Too Large
   //
 
-  function writeErr(res, code) {
-    //var msg = httpStatusToDescription(code);
-    res.writeHead(code);
-    //res.write(msg);
-    res.end();
-  }
 
   // Diagram O-18
   // Checks if an entity has multiple representations, sends 303 if so.
   // If not, it runs handleOk.
-  function writeWithMultipleRepCheck(req, res, machine) {
+  function writeWithMultipleRepCheck(machine, req) {
     if(machine.hasMultipleRepresentations(req)) {
-      writeErr(res, 300); // 300 - Multiple Choices
-      return;
+      return { code: 300 }; // 300 - Multiple Choices
     } else {
+      //FIXME
       machine.handleOk(req, res); // 200 - Ok
       return;
     }
@@ -57,31 +51,22 @@ var MebApp = function() {
   // Diagram O-20
   // This checks if the response includes an entity with potentially
   // multiple representations. This will write and close the result stream.
-  function writeResponseWithEntityCheck(req, res, machine) {
+  function writeResponseWithEntityCheck(machine, req) {
     if(machine.respondWithEntity) {
-      writeWithMultipleRepCheck(req, res, machine);
-      return;
+      return writeWithMultipleRepCheck(machine, req);
     } else {
-      writeErr(res, 204); // 204 - No Content
-      return;
+      return { code: 204 }; // 204 - No Content
     } 
   }
 
   // Diagram P-11
-  function writeWithNewResourceCheck(req, res, machine) {
+  function writeWithNewResourceCheck(machine, req) {
     if(machine.newResource(req)) {
       //TODO check response value should be for 201
-      writeErr(res, 201); // 201 - Created
-      return;
+      return { code: 201 }; // 201 - Created
     } else {
-      writeResponseWithEntityCheck(req, res, machine);
-      return;
+      return writeResponseWithEntityCheck(machine, req);
     }
-  }
-
-  function getWebMachineResponse(machine) {
-
-    var resp = runWebMachine(machine);
   }
 
   /*
@@ -91,184 +76,180 @@ var MebApp = function() {
     *   data:   {}, // empty resp body if excluded
     * }
     */
-  function runWebMachine(machine) {
-    return function() {
+  function runWebMachine(machine, req, res) {
+    // Known Method?
+    if(decisions.unknownMethod(machine.knownMethods, req)) {
+      return { code: 501 };
+    }
 
-      var req = this.req,
-          res = this.res;
+    // URI too long?
+    if(machine.uriTooLarge(req)) {
+      return { code: 414 }; // 414 - Request URI too long
+    }
 
-      // Known Method?
-      if(decisions.unknownMethod(machine.knownMethods, req)) {
-        return { code: 501 };
-      }
+    // Method Allowed?
+    if(!decisions.methodAllowed(machine.allowedMethods, req)) {
+      return { code: 405 }; // 405 - Method Not Allowed
+    }
 
-      // URI too long?
-      if(machine.uriTooLarge(req)) {
-        return { code: 414 }; // 414 - Request URI too long
-      }
+    // Authorized?
+    if(!machine.authorized(req)) {
+      return { code: 401 }; // 401 - Unauthorized
+    }
 
-      // Method Allowed?
-      if(!decisions.methodAllowed(machine.allowedMethods, req)) {
-        writeErr(res, 405); // 405 - Method Not Allowed
-        return;
-      }
+    // Forbidden?
+    if(machine.forbidden(req)) {
+      return { code:  403 }; // 403 - Forbidden}
+    }
 
-      // Authorized?
-      if(!machine.authorized(req)) {
-        writeErr(res, 401); // 401 - Unauthorized
-        return;
-      }
+    // OPTIONS?
+    // DEFAULTS TO handleOK
+    if(req.method === httpMethods.OPTIONS) {
+      if(machine.options) {
 
-      // Forbidden?
-      if(machine.forbidden(req)) {
-        writeErr(res, 403); // 403 - Forbidden
-        return;
-      }
-
-      // OPTIONS?
-      // DEFAULTS TO handleOK
-      if(req.method === httpMethods.OPTIONS) {
-        if(machine.options) {
-          machine.options(req, res);
-          return;
-        } else {
-          machine.handleOk(req, res);
-          return;
-        }
-      }
-
-
-      //*********************************
-      // TODO
-      // Accept-* handling should go here
-      //*********************************
-      
-      // Reource exists?
-      // Diagram G-7
-      if(!machine.exists(req)) {
-        //TODO if match exists -> 412 (Diagram H-7)
-
-        // Diagram i-7
-        if(req.method === httpMethods.PUT) {
-          //TODO this
-          if(machine.applyToDifferentUri(req)) {
-            writeErr(res, 301); // 301 - Moved Permanently
-            return;
-          }
-
-          // COULD POSSIBLY REFACTOR THIS
-          if(machine.conflict(req)) {
-            writeErr(res, 409); // 409 - Conflict
-            return;
-          }
-
-          writeWithNewResourceCheck(req, res, machine);
-          return;
-
-        } else {
-          // Diagram K-7
-          if(machine.existedPreviously(req)) {
-            // Diagram K-5
-            if(machine.movedPermanently(req)) {
-              writeErr(res, 301); // 301 - Moved Permanently
-              return;
-            }
-
-            if(machine.movedTemporarily(req)) {
-              writeErr(res, 307); // 307 - Moved Temporarily
-              return;
-            } else {
-              if(req.method === httpMethods.POST) {
-                // Diagram N-5
-                if(machine.permitPostToMissingResource) {
-                  if(machine.redirect(req)) {
-                    writeErr(res, 303); // 303 - See Other
-                  } else {
-                    writeWithNewResourceCheck(req, res, machine);
-                    return;
-                  }
-                } else {
-                  writeErr(res, 410); // 410 - Gone
-                  return;
-                }
-              } else {
-                writeErr(res, 410); // 410 - Gone
-                return;
-              }
-            }
-          } else {
-            if(req.method === httpMethods.POST) {
-              if(machine.permitPostToMissingResource){ // TODO doc
-                //TODO this **
-              } // else 404
-            } // else 404
-          }
-        }
-
-        writeErr(res, 404);
-        return;
-      }
-
-      //****************************************
-      // TODO
-      // Caching, ETags, mofified since, etc, :(
-      //****************************************
-      
-      // Diagram M-16
-      // TIME TO DELETE STUFF >:D
-      if(req.method === httpMethods.DELETE) {
-        // machine's delete function,
-        var deleteFn = machine.onDelete;
-        // Diagram M-20
-        if(!deleteFn) {
-          // No deleteFn therefore no delete enacted
-          writeErr(res, 202); // 202 - Accepted
-          return;
-        }
-
-        if(deleteFn(req)) {
-          writeResponseWithEntityCheck(req, res, machine);
-          return;
-        } else { // delete not enacted
-          writeErr(res, 202); // 202 - Accepted
-          return;
-        }
-      }
-
-      // Diagram N-16
-      if(req.method === httpMethods.POST) {
-        if(machine.redirect(req)) {
-          writeErr(res, 303); // 303 - See Other
-          return;
-        } else {
-          writeWithNewResourceCheck(req, res, machine);
-          return;
-        }
-      }
-
-      // Diagram O-16
-      // TODO write tests
-      if(req.method === httpMethods.PUT) {
-        // Diagram O-14
-        if(machine.conflict(req)) {
-          writeErr(res, 409); // 409 - Conflict
-          return;
-        }
-
-        writeWithNewResourceCheck(req, res, machine);
+        //TODO return value
+        machine.options(req, res);
         return;
       } else {
-        writeWithMultipleRepCheck(req, res, machine);
-        return;
-      }
 
-
-      if(req.method === httpMethods.GET) {
+        //TODO return value
         machine.handleOk(req, res);
         return;
       }
+    }
+
+
+    //*********************************
+    // TODO
+    // Accept-* handling should go here
+    //*********************************
+    
+    // Reource exists?
+    // Diagram G-7
+    if(!machine.exists(req)) {
+      //TODO if match exists -> 412 (Diagram H-7)
+
+      // Diagram i-7
+      if(req.method === httpMethods.PUT) {
+        //TODO this
+        if(machine.applyToDifferentUri(req)) {
+          return { code: 301 }; // 301 - Moved Permanently
+        }
+
+        // COULD POSSIBLY REFACTOR THIS
+        if(machine.conflict(req)) {
+          return { code: 409 }; // 409 - Conflict
+        }
+
+        return writeWithNewResourceCheck(machine, req);
+
+      } else {
+        // Diagram K-7
+        if(machine.existedPreviously(req)) {
+          // Diagram K-5
+          if(machine.movedPermanently(req)) {
+            return { code: 301 }; // 301 - Moved Permanently
+          }
+
+          if(machine.movedTemporarily(req)) {
+            return { code: 307 }; // 307 - Moved Temporarily
+          } else {
+            if(req.method === httpMethods.POST) {
+              // Diagram N-5
+              if(machine.permitPostToMissingResource) {
+                if(machine.redirect(req)) {
+                  return { code: 303 }; // 303 - See Other
+                } else {
+                  // FIXME
+                  return writeWithNewResourceCheck(machine, req);
+                }
+              } else {
+                return { code: 410 }; // 410 - Gone
+              }
+            } else {
+              return { code: 410 }; // 410 - Gone
+            }
+          }
+        } else {
+          if(req.method === httpMethods.POST) {
+            if(machine.permitPostToMissingResource){ // TODO doc
+              //TODO this **
+            } // else 404
+          } // else 404
+        }
+      }
+
+      return { code: 404 };
+    }
+
+    //****************************************
+    // TODO
+    // Caching, ETags, mofified since, etc, :(
+    //****************************************
+    
+    // Diagram M-16
+    // TIME TO DELETE STUFF >:D
+    if(req.method === httpMethods.DELETE) {
+      // machine's delete function,
+      var deleteFn = machine.onDelete;
+      // Diagram M-20
+      if(!deleteFn) {
+        // No deleteFn therefore no delete enacted
+        return { code: 202 }; // 202 - Accepted
+      }
+
+      if(deleteFn(req)) {
+        return writeResponseWithEntityCheck(req, res, machine);
+      } else { // delete not enacted
+        return { code: 202 }; // 202 - Accepted
+      }
+    }
+
+    // Diagram N-16
+    if(req.method === httpMethods.POST) {
+      if(machine.redirect(req)) {
+        return { code: 303 }; // 303 - See Other
+      } else {
+        return writeWithNewResourceCheck(req, res, machine);
+      }
+    }
+
+    // Diagram O-16
+    // TODO write tests
+    if(req.method === httpMethods.PUT) {
+      // Diagram O-14
+      if(machine.conflict(req)) {
+        return { code: 409 }; // 409 - Conflict
+      }
+
+      return writeWithNewResourceCheck(req, res, machine);
+    } else {
+      return writeWithMultipleRepCheck(req, res, machine);
+    }
+
+
+    if(req.method === httpMethods.GET) {
+      return machine.handleOk(req, res);
+    }
+  }
+
+  /*
+   * THIS IS A VERY IMPORTANT FUNCTION.
+   *
+   * THIS IS ESSENTIALLY THE ENTRY POINT TO THE WEB MACHINE
+   */
+  function getWebMachineResponse(machine) {
+    return function() {
+      var req = this.req,
+          res = this.res;
+
+      var resp = runWebMachine(machine, req, res);
+      console.log(resp);
+      res.writeHead(resp.code);
+      res.end();
     };
   }
+
 
   /**
    * Define a resource on the MebApp.
@@ -295,11 +276,11 @@ var MebApp = function() {
       // Attach to all HTTP methods
       // FIXME: include the rest of the methods
       //        (except HEAD, look at Router.prototype.dispatch for rationale)
-      get: runWebMachine(machine),
-      patch: runWebMachine(machine),
-      post: runWebMachine(machine),
-      put: runWebMachine(machine),
-      delete: runWebMachine(machine)
+      get: getWebMachineResponse(machine),
+      patch: getWebMachineResponse(machine),
+      post: getWebMachineResponse(machine),
+      put: getWebMachineResponse(machine),
+      delete: getWebMachineResponse(machine)
     };
 
     return $meb;

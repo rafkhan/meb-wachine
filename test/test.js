@@ -4,6 +4,7 @@ var Meb = require('../meb');
 var MebApp = Meb.App;
 var assert = require('assert');
 var supertest = require('supertest');
+var Q = require('Q');
 
 // Non-responsive requests usually don't error out. This makes them.
 // Takes an optional `done` parameter that it will use to throw
@@ -22,12 +23,21 @@ function tErr(done) {
   };
 }
 
+function dErr(deferred) {
+  return function(err) {
+    if(err) {
+      deferred.reject(err);
+    } else {
+      deferred.resolve();
+    }
+  };
+}
+
 function pingResource() {
   return {
     path: '/ping',
-    handleOk: function(req, res) {
-      res.write("pong");
-      res.end();
+    handleOk: function() {
+      return { hello: 'world' };
     }
   };
 }
@@ -71,7 +81,7 @@ describe('Default responses', function() {
       }); 
   });
 
-  it('Should 200 on POST by default', function(done) {
+  it('Should 200 on POST', function(done) {
     supertest(makeAppWithMethod(Meb.methods.POST))
       .post('/ping')
       .expect(200)
@@ -82,7 +92,7 @@ describe('Default responses', function() {
       }); 
   });
 
-  it('Should 200 on PUT by default', function(done) {
+  it('Should 200 on PUT', function(done) {
     supertest(makeAppWithMethod(Meb.methods.PUT))
       .put('/ping')
       .expect(200)
@@ -110,20 +120,27 @@ describe('Method Handling', function() {
     
     var server = app.getServer();
     var st = supertest(server);
-    try {
-      st.post('/ping')
-        .expect(405)
-        .end(tErr());
 
-      st.get('/ping')
-        .expect(200)
-        .end(tErr());
-    } catch(err) {
-      done(err);
-      return;
-    }
+    var d1 = Q.defer();
+    var d2 = Q.defer();
+    var p1 = d1.promise;
+    var p2 = d2.promise;
 
-    done();
+    st.post('/ping')
+      .expect(405)
+      .end(dErr(d1));
+
+    st.get('/ping')
+      .expect(200)
+      .end(dErr(d2));
+
+    Q.all([p1, p2])
+      .then(function() {
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('Should allow method specification, deny the others', function(done) {
@@ -135,24 +152,32 @@ describe('Method Handling', function() {
     var server = app.getServer();
     var st = supertest(server);
 
-    try {
-      st.post('/ping')
-        .expect(200)
-        .end(tErr());
+    var d1 = Q.defer();
+    var d2 = Q.defer();
+    var d3 = Q.defer();
+    var p1 = d1.promise;
+    var p2 = d2.promise;
+    var p3 = d2.promise;
 
-      st.delete('/ping')
-        .expect(202)
-        .end(tErr());
+    st.post('/ping')
+      .expect(200)
+      .end(dErr(d1));
 
-      st.get('/ping')
-        .expect(405)
-        .end(tErr());
-    } catch(err) {
-      done(err);
-      return;
-    }
+    st.delete('/ping')
+      .expect(202)
+      .end(dErr(d2));
 
-    done();
+    st.get('/ping')
+      .expect(405)
+      .end(dErr(d3));
+
+    Q.all([p1, p2, p3])
+      .then(function() {
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
   });
 });
 

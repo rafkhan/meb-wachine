@@ -19,7 +19,8 @@
   "dependencies": {
     "lodash": "^2.4.1",
     "director": "^1.2.3",
-    "http-status-to-description": "0.0.1"
+    "http-status-to-description": "0.0.1",
+    "q": "^1.0.1"
   },
   "devDependencies": {
     "supertest": "^0.13.0",
