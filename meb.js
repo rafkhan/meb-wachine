@@ -42,9 +42,7 @@ var MebApp = function() {
     if(machine.hasMultipleRepresentations(req)) {
       return { code: 300 }; // 300 - Multiple Choices
     } else {
-      //FIXME
-      machine.handleOk(req, res); // 200 - Ok
-      return;
+      return { code: 200, body: machine.handleOk(req) }; // 200 - Ok;
     }
   }
 
@@ -76,7 +74,7 @@ var MebApp = function() {
     *   data:   {}, // empty resp body if excluded
     * }
     */
-  function runWebMachine(machine, req, res) {
+  function runWebMachine(machine, req) {
     // Known Method?
     if(decisions.unknownMethod(machine.knownMethods, req)) {
       return { code: 501 };
@@ -106,15 +104,13 @@ var MebApp = function() {
     // DEFAULTS TO handleOK
     if(req.method === httpMethods.OPTIONS) {
       if(machine.options) {
-
         //TODO return value
-        machine.options(req, res);
+        machine.options(req);
         return;
       } else {
-
         //TODO return value
-        machine.handleOk(req, res);
-        return;
+        
+        return { code: 200, body: machine.handleOk(req) };
       }
     }
 
@@ -199,7 +195,7 @@ var MebApp = function() {
       }
 
       if(deleteFn(req)) {
-        return writeResponseWithEntityCheck(req, res, machine);
+        return writeResponseWithEntityCheck(machine, req);
       } else { // delete not enacted
         return { code: 202 }; // 202 - Accepted
       }
@@ -210,7 +206,7 @@ var MebApp = function() {
       if(machine.redirect(req)) {
         return { code: 303 }; // 303 - See Other
       } else {
-        return writeWithNewResourceCheck(req, res, machine);
+        return writeWithNewResourceCheck(machine, req);
       }
     }
 
@@ -222,14 +218,14 @@ var MebApp = function() {
         return { code: 409 }; // 409 - Conflict
       }
 
-      return writeWithNewResourceCheck(req, res, machine);
+      return writeWithNewResourceCheck(machine, req);
     } else {
-      return writeWithMultipleRepCheck(req, res, machine);
+      return writeWithMultipleRepCheck(machine, req);
     }
 
 
     if(req.method === httpMethods.GET) {
-      return machine.handleOk(req, res);
+      return { code: 200, body: machine.handleOk(req) };
     }
   }
 
@@ -244,8 +240,12 @@ var MebApp = function() {
           res = this.res;
 
       var resp = runWebMachine(machine, req, res);
-      console.log(resp);
       res.writeHead(resp.code);
+      if(resp.body) {
+        var body = JSON.stringify(resp.body);
+        res.write(body);
+      }
+
       res.end();
     };
   }

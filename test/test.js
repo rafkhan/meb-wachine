@@ -37,7 +37,7 @@ function pingResource() {
   return {
     path: '/ping',
     handleOk: function() {
-      return { hello: 'world' };
+      return { message: 'pong' };
     }
   };
 }
@@ -53,7 +53,8 @@ describe('Meb Resource', function() {
       .expect(200)
       .end(function(err, res) {
         if(err) { done(err); }
-        assert.equal("pong", res.text);
+        var val = JSON.parse(res.text);
+        assert.equal('pong', val.message);
         done();
       });
   });
@@ -76,7 +77,8 @@ describe('Default responses', function() {
       .expect(200)
       .end(function(err, res) {
         if(err) throw err;
-        assert.equal("pong", res.text);
+        var val = JSON.parse(res.text);
+        assert.equal('pong', val.message);
         done();
       }); 
   });
@@ -87,7 +89,8 @@ describe('Default responses', function() {
       .expect(200)
       .end(function(err, res) {
         if(err) throw err;
-        assert.equal("pong", res.text);
+        var val = JSON.parse(res.text);
+        assert.equal('pong', val.message);
         done();
       }); 
   });
@@ -98,7 +101,8 @@ describe('Default responses', function() {
       .expect(200)
       .end(function(err, res) {
         if(err) throw err;
-        assert.equal("pong", res.text);
+        var val = JSON.parse(res.text);
+        assert.equal('pong', val.message);
         done();
       }); 
   });
@@ -225,7 +229,8 @@ describe('DELETE stuff', function() {
     st.delete('/ping')
       .expect(200)
       .end(function(err, res) {
-        assert.equal("pong", res.text);
+        var val = JSON.parse(res.text);
+        assert.equal('pong', val.message);
         done(err);
       });
   });
