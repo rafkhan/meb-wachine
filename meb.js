@@ -8,9 +8,10 @@
  * @namespace Meb
  */
 
-var _        = require('lodash');
-var http     = require('http');
-var director = require('director');
+var _         = require('lodash');
+var http      = require('http');
+var director  = require('director');
+var Immutable = require('immutable');
 var httpStatusToDescription = require('http-status-to-description');
 
 var httpMethods = require('./lib/methods');
@@ -42,7 +43,8 @@ var MebApp = function() {
     if(machine.hasMultipleRepresentations(req)) {
       return { code: 300 }; // 300 - Multiple Choices
     } else {
-      return { code: 200, body: machine.handleOk(machineState, urlParams, req) }; // 200 - Ok;
+      return { code: 200,
+        body: machine.handleOk(machineState, urlParams, req) }; // 200 - Ok;
     }
   }
 
@@ -76,7 +78,7 @@ var MebApp = function() {
     */
   function runWebMachine(machine, req, urlParams) {
 
-    var machineState = {}; // VERY IMPORTANT
+    var machineState = Immutable.Map(); // VERY IMPORTANT
 
     // Known Method?
     if(decisions.unknownMethod(machine.knownMethods, req)) {
@@ -111,8 +113,6 @@ var MebApp = function() {
         machine.options(req);
         return;
       } else {
-        //TODO return value
-        
         return { code: 200, body: machine.handleOk(machineState, urlParams, req) };
       }
     }
@@ -139,8 +139,7 @@ var MebApp = function() {
 
         // COULD POSSIBLY REFACTOR THIS
         var conflictVal = machine.conflict(req);
-        _.merge(machineState, existVal);
-        if(machine.conflict(req)) {
+        if(conflictVal) {
           return { code: 409 }; // 409 - Conflict
         }
 
@@ -163,8 +162,8 @@ var MebApp = function() {
                 if(machine.redirect(req)) {
                   return { code: 303 }; // 303 - See Other
                 } else {
-                  // FIXME
-                  return writeWithNewResourceCheck(machine, machineState, req, urlParams);
+                  return writeWithNewResourceCheck(machine,
+                      machineState, req, urlParams);
                 }
               } else {
                 return { code: 410 }; // 410 - Gone
@@ -258,7 +257,6 @@ var MebApp = function() {
       }
 
       res.end();
-      console.log(resp.code, req.url);
     };
   }
 
