@@ -58,6 +58,29 @@ describe('Meb Resource', function() {
         done();
       });
   });
+
+  it('Should get URL parameters', function(done) {
+    var app = new MebApp();
+    app.resource({
+      path: '/ping/:pong/:pop',
+      handleOk: function(req, urlParams) {
+        return { pong: urlParams[0], pop: urlParams[1] };
+      }
+    });
+    
+    var server = app.getServer();
+    supertest(server)
+      .get('/ping/pong/pop')
+      .expect(200)
+      .end(function(err, res) {
+        if(err) { done(err); }
+        var val = JSON.parse(res.text);
+        assert.equal('pong', val.pong);
+        assert.equal('pop', val.pop);
+        done();
+      });
+
+  });
 });
 
 describe('Default responses', function() {
@@ -339,3 +362,5 @@ describe('Existence', function() {
   });
 
 });
+
+
