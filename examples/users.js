@@ -22,7 +22,7 @@ var allUsersResource = {
 
 var userNameResource = {
   path: '/users/name/:name',
-  handleOk: function(req, urlParams) {
+  exists: function(state, urlParams) {
     var nameQuery = urlParams[0];
     var users = _.filter(userData, function(user) {
       if(user.name === nameQuery) {
@@ -32,7 +32,15 @@ var userNameResource = {
       return false;
     });
 
-    return users;
+    if(users.length > 0) {
+      return {users: users};
+    }
+
+    return;
+  },
+
+  handleOk: function(state) {
+    return state.users;
   }
 };
 

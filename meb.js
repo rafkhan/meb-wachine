@@ -38,32 +38,32 @@ var MebApp = function() {
   // Diagram O-18
   // Checks if an entity has multiple representations, sends 303 if so.
   // If not, it runs handleOk.
-  function writeWithMultipleRepCheck(machine, req, urlParams) {
+  function writeWithMultipleRepCheck(machine, machineState, req, urlParams) {
     if(machine.hasMultipleRepresentations(req)) {
       return { code: 300 }; // 300 - Multiple Choices
     } else {
-      return { code: 200, body: machine.handleOk(req, urlParams) }; // 200 - Ok;
+      return { code: 200, body: machine.handleOk(machineState, urlParams, req) }; // 200 - Ok;
     }
   }
 
   // Diagram O-20
   // This checks if the response includes an entity with potentially
   // multiple representations. This will write and close the result stream.
-  function writeResponseWithEntityCheck(machine, req) {
+  function writeResponseWithEntityCheck(machine, machineState, req, urlParams) {
     if(machine.respondWithEntity) {
-      return writeWithMultipleRepCheck(machine, req);
+      return writeWithMultipleRepCheck(machine, machineState, req, urlParams);
     } else {
       return { code: 204 }; // 204 - No Content
     } 
   }
 
   // Diagram P-11
-  function writeWithNewResourceCheck(machine, req, urlParams) {
+  function writeWithNewResourceCheck(machine, machineState, req, urlParams) {
     if(machine.newResource(req)) {
       //TODO check response value should be for 201
       return { code: 201 }; // 201 - Created
     } else {
-      return writeResponseWithEntityCheck(machine, req, urlParams);
+      return writeResponseWithEntityCheck(machine, machineState, req, urlParams);
     }
   }
 
@@ -75,6 +75,9 @@ var MebApp = function() {
     * }
     */
   function runWebMachine(machine, req, urlParams) {
+
+    var machineState = {}; // VERY IMPORTANT
+
     // Known Method?
     if(decisions.unknownMethod(machine.knownMethods, req)) {
       return { code: 501 };
@@ -110,7 +113,7 @@ var MebApp = function() {
       } else {
         //TODO return value
         
-        return { code: 200, body: machine.handleOk(req, urlParams) };
+        return { code: 200, body: machine.handleOk(machineState, urlParams, req) };
       }
     }
 
@@ -122,7 +125,9 @@ var MebApp = function() {
     
     // Reource exists?
     // Diagram G-7
-    if(!machine.exists(req)) {
+    var existVal = machine.exists(machineState, urlParams);
+    machineState = _.merge(machineState, existVal);
+    if(!existVal) {
       //TODO if match exists -> 412 (Diagram H-7)
 
       // Diagram i-7
@@ -133,11 +138,13 @@ var MebApp = function() {
         }
 
         // COULD POSSIBLY REFACTOR THIS
+        var conflictVal = machine.conflict(req);
+        _.merge(machineState, existVal);
         if(machine.conflict(req)) {
           return { code: 409 }; // 409 - Conflict
         }
 
-        return writeWithNewResourceCheck(machine, req, urlParams);
+        return writeWithNewResourceCheck(machine, machineState, req, urlParams);
 
       } else {
         // Diagram K-7
@@ -157,7 +164,7 @@ var MebApp = function() {
                   return { code: 303 }; // 303 - See Other
                 } else {
                   // FIXME
-                  return writeWithNewResourceCheck(machine, req, urlParams);
+                  return writeWithNewResourceCheck(machine, machineState, req, urlParams);
                 }
               } else {
                 return { code: 410 }; // 410 - Gone
@@ -195,7 +202,7 @@ var MebApp = function() {
       }
 
       if(deleteFn(req)) {
-        return writeResponseWithEntityCheck(machine, req, urlParams);
+        return writeResponseWithEntityCheck(machine, machineState, req, urlParams);
       } else { // delete not enacted
         return { code: 202 }; // 202 - Accepted
       }
@@ -206,7 +213,7 @@ var MebApp = function() {
       if(machine.redirect(req)) {
         return { code: 303 }; // 303 - See Other
       } else {
-        return writeWithNewResourceCheck(machine, req, urlParams);
+        return writeWithNewResourceCheck(machine, machineState, req, urlParams);
       }
     }
 
@@ -218,14 +225,14 @@ var MebApp = function() {
         return { code: 409 }; // 409 - Conflict
       }
 
-      return writeWithNewResourceCheck(machine, req, urlParams);
+      return writeWithNewResourceCheck(machine, machineState, req, urlParams);
     } else {
-      return writeWithMultipleRepCheck(machine, req, urlParams);
+      return writeWithMultipleRepCheck(machine, machineState, req, urlParams);
     }
 
 
     if(req.method === httpMethods.GET) {
-      return { code: 200, body: machine.handleOk(req, urlParams) };
+      return { code: 200, body: machine.handleOk(machineState, urlParams, req) };
     }
   }
 
@@ -251,6 +258,7 @@ var MebApp = function() {
       }
 
       res.end();
+      console.log(resp.code, req.url);
     };
   }
 
