@@ -36,7 +36,7 @@ function dErr(deferred) {
 function pingResource() {
   return {
     path: '/ping',
-    handleOk: function() {
+    handleOk: function(req) {
       return { message: 'pong' };
     }
   };
