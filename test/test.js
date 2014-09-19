@@ -36,7 +36,7 @@ function dErr(deferred) {
 function pingResource() {
   return {
     path: '/ping',
-    handleOk: function(req) {
+    handleOk: function(state, req) {
       return { message: 'pong' };
     }
   };
@@ -63,7 +63,7 @@ describe('Meb Resource', function() {
     var app = new MebApp();
     app.resource({
       path: '/ping/:pong/:pop',
-      handleOk: function(req, urlParams) {
+      handleOk: function(state, urlParams, req) {
         return { pong: urlParams[0], pop: urlParams[1] };
       }
     });

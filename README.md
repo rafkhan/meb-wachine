@@ -77,17 +77,23 @@ var allUsersResource = {
 
 var userNameResource = {
   path: '/users/name/:name',
-  handleOk: function(req, urlParams) {
+
+  exists: function(state, urlParams) {
     var nameQuery = urlParams[0];
     var users = _.filter(userData, function(user) {
-      if(user.name === nameQuery) {
-        return true;
-      }
-
+      if(user.name === nameQuery) { return true; }
       return false;
     });
 
-    return users;
+    if(users.length > 0) {
+      return { users: users };
+    }
+
+    return; // returns falsy value, so 404!
+  },
+
+  handleOk: function(state) {
+    return state.users;
   }
 };
 
@@ -97,6 +103,11 @@ app.resource(userNameResource);
 var server = app.getServer();
 console.log('Starting web server on localhost:3333');
 server.listen(3333);
+
+/*
+ * $ curl localhost:3333/users/name/Raf
+ *   => [{"name":"Raf","age":"18"}]
+ */
 ```
 
 Now you can do this!
@@ -127,6 +138,9 @@ modify.
 - *It may just be my stupidity* but does webmachine not support
   redirect on GET requests?
 - **ANNOTATE ENTIRE DEFAULT WM WITH DIAGRAM COORDS**
+- http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+- Attach response bodies to non-successful status codes as well, all abiding
+  by the above rules.
 
 ##Testing it
 `mocha`

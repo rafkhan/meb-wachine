@@ -33,10 +33,10 @@ var userNameResource = {
     });
 
     if(users.length > 0) {
-      return { users: users };
+      return {users: users};
     }
 
-    return; // returns falsy value, so 404!
+    return;
   },
 
   handleOk: function(state) {
