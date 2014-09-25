@@ -247,6 +247,7 @@ var MebApp = function() {
 
       var args = Array.prototype.slice.call(arguments, 0);
       // TODO test this
+      // TODO figure out why I'm sorting
       var urlParams = args.sort();
 
       var resp = runWebMachine(machine, req, urlParams);
