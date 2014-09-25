@@ -125,8 +125,8 @@ var MebApp = function() {
     
     // Reource exists?
     // Diagram G-7
-    var existVal = machine.exists(machineState, urlParams);
-    machineState = _.merge(machineState, existVal);
+    var existVal = machine.exists(machineState, urlParams, req);
+    if(existVal) { machineState = existVal; }
     if(!existVal) {
       //TODO if match exists -> 412 (Diagram H-7)
 
