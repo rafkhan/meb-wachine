@@ -8,7 +8,8 @@ var userData = [
   { name: 'Raf', age: '18' },
   { name: 'Tristan', age: '19' },
   { name: 'Josh', age: '22' },
-  { name: 'Matt', age: '22' }
+  { name: 'Matt', age: '22' },
+  { name: 'Matt', age: '26' }
 ];
 
 var app = new MebApp();
@@ -22,7 +23,7 @@ var allUsersResource = {
 
 var userNameResource = {
   path: '/users/name/:name',
-  exists: function(state, urlParams) {
+  exists: function(ctx, urlParams, req) {
     var nameQuery = urlParams[0];
     var users = _.filter(userData, function(user) {
       if(user.name === nameQuery) {
@@ -33,14 +34,14 @@ var userNameResource = {
     });
 
     if(users.length > 0) {
-      return {users: users};
+      return ctx.set('users', users);
     }
 
-    return;
+    return false;
   },
 
-  handleOk: function(state) {
-    return state.users;
+  handleOk: function(ctx) {
+    return ctx.toJS();
   }
 };
 
