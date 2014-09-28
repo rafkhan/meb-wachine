@@ -51,7 +51,7 @@ describe('Context handling', function() {
       },
     
       authorized: function() {
-        return true;
+        return false;
       }
     };
 
@@ -62,10 +62,8 @@ describe('Context handling', function() {
 
     st.get('/ping')
       .expect(401)
-      .end(function(err, res) {
-        if(err) { throw err };
-        assert.equal(42, JSON.parse(res.text).x);
-        done();
+      .end(function(err) {
+        done(err);
       });
 
   });

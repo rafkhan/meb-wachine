@@ -109,7 +109,9 @@ var MebApp = function() {
     }
 
     // Forbidden?
-    if(machine.forbidden(req)) {
+    var forbidVal = machine.forbidden(req);
+    checkVal(forbidVal);
+    if(forbidVal) {
       return { code:  403 }; // 403 - Forbidden}
     }
 
