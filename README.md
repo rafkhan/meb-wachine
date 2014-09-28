@@ -55,6 +55,7 @@ explain how a webmachine works.
 You can find this in `examples/users.js`
 
 ```javascript
+
 var _ = require('lodash');
 var Meb = require('../meb');
 var MebApp = Meb.App;
@@ -63,7 +64,8 @@ var userData = [
   { name: 'Raf', age: '18' },
   { name: 'Tristan', age: '19' },
   { name: 'Josh', age: '22' },
-  { name: 'Matt', age: '22' }
+  { name: 'Matt', age: '22' },
+  { name: 'Matt', age: '26' }
 ];
 
 var app = new MebApp();
@@ -77,23 +79,25 @@ var allUsersResource = {
 
 var userNameResource = {
   path: '/users/name/:name',
-
-  exists: function(state, urlParams) {
+  exists: function(ctx, urlParams, req) {
     var nameQuery = urlParams[0];
     var users = _.filter(userData, function(user) {
-      if(user.name === nameQuery) { return true; }
+      if(user.name === nameQuery) {
+        return true;
+      }
+
       return false;
     });
 
     if(users.length > 0) {
-      return { users: users };
+      return ctx.set('users', users);
     }
 
-    return; // returns falsy value, so 404!
+    return false;
   },
 
-  handleOk: function(state) {
-    return state.users;
+  handleOk: function(ctx) {
+    return ctx.toJS();
   }
 };
 
@@ -103,11 +107,6 @@ app.resource(userNameResource);
 var server = app.getServer();
 console.log('Starting web server on localhost:3333');
 server.listen(3333);
-
-/*
- * $ curl localhost:3333/users/name/Raf
- *   => [{"name":"Raf","age":"18"}]
- */
 ```
 
 Now you can do this!
