@@ -41,6 +41,34 @@ describe('Context handling', function() {
         done();
       });
   });
+
+  // I put this in to test checkVal()
+  it('Should let me test Authorization :3', function(done) {
+   var resource = {
+      path: '/ping',
+      handleOk: function(ctx, params, req) {
+        return ctx.toJS();
+      },
+    
+      authorized: function() {
+        return true;
+      }
+    };
+
+    var app = new MebApp();
+    app.resource(resource);
+    var server = app.getServer();
+    var st = supertest(server);
+
+    st.get('/ping')
+      .expect(401)
+      .end(function(err, res) {
+        if(err) { throw err };
+        assert.equal(42, JSON.parse(res.text).x);
+        done();
+      });
+
+  });
 });
 
 

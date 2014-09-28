@@ -80,6 +80,12 @@ var MebApp = function() {
 
     var machineState = Immutable.Map(); // VERY IMPORTANT
 
+    function checkVal(v) {
+      if(v && typeof(v) === 'object') {
+        machineState = v;
+      }
+    }
+
     // Known Method?
     if(decisions.unknownMethod(machine.knownMethods, req)) {
       return { code: 501 };
@@ -96,7 +102,9 @@ var MebApp = function() {
     }
 
     // Authorized?
-    if(!machine.authorized(req)) {
+    var authVal = machine.authorized(machineState, urlParams, req);
+    checkVal(authVal);
+    if(!authVal) {
       return { code: 401 }; // 401 - Unauthorized
     }
 
@@ -126,7 +134,7 @@ var MebApp = function() {
     // Reource exists?
     // Diagram G-7
     var existVal = machine.exists(machineState, urlParams, req);
-    if(existVal) { machineState = existVal; }
+    checkVal(existVal);
     if(!existVal) {
       //TODO if match exists -> 412 (Diagram H-7)
 
