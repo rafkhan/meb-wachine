@@ -119,10 +119,12 @@ var MebApp = function() {
     // DEFAULTS TO handleOK
     if(req.method === httpMethods.OPTIONS) {
       if(machine.options) {
-        //TODO return value
+        //TODO DOCUMENT THIS
+        //this is return handler specific to OPTIONS TODO FIXME XXX
         machine.options(req);
         return;
       } else {
+        // CONGRATULATION :D you made a successful HTTP request
         return { code: 200, body: machine.handleOk(machineState, urlParams, req) };
       }
     }
@@ -143,12 +145,16 @@ var MebApp = function() {
       // Diagram i-7
       if(req.method === httpMethods.PUT) {
         //TODO this
-        if(machine.applyToDifferentUri(req)) {
+        
+        var diffUriVal = machine.applyToDifferentUri(req);
+        checkVal(diffUriVal);
+        if(diffUriVal) {
           return { code: 301 }; // 301 - Moved Permanently
         }
 
         // COULD POSSIBLY REFACTOR THIS
         var conflictVal = machine.conflict(req);
+        checkVal(conflictVal);
         if(conflictVal) {
           return { code: 409 }; // 409 - Conflict
         }
@@ -157,18 +163,28 @@ var MebApp = function() {
 
       } else {
         // Diagram K-7
-        if(machine.existedPreviously(req)) {
+        var existPrevVal = machine.existedPreviously(req);
+        checkVal(existPrevVal);
+        if(existPrevVal) {
+
           // Diagram K-5
-          if(machine.movedPermanently(req)) {
+          var movedPermVal = machine.movedPermanently(req);
+          checkVal(movedPermVal);
+          if(movedPermVal) {
             return { code: 301 }; // 301 - Moved Permanently
           }
 
-          if(machine.movedTemporarily(req)) {
+          var movedTempVal = machine.movedTemporarily(req);
+          checkVal(movedTempVal);
+          if(movedTempVal) {
             return { code: 307 }; // 307 - Moved Temporarily
           } else {
             if(req.method === httpMethods.POST) {
+
               // Diagram N-5
               if(machine.permitPostToMissingResource) {
+
+                // FIXME actually redirect the user?
                 if(machine.redirect(req)) {
                   return { code: 303 }; // 303 - See Other
                 } else {
