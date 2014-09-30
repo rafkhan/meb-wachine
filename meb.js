@@ -92,6 +92,7 @@ var MebApp = function() {
     }
 
     // URI too long?
+    // TODO ctx switch?
     if(machine.uriTooLarge(req)) {
       return { code: 414 }; // 414 - Request URI too long
     }
@@ -185,7 +186,9 @@ var MebApp = function() {
               if(machine.permitPostToMissingResource) {
 
                 // FIXME actually redirect the user?
-                if(machine.redirect(req)) {
+                var redirectVal = machine.redirect(req);
+                checkVal(redirectVal);
+                if(redirectVal) {
                   return { code: 303 }; // 303 - See Other
                 } else {
                   return writeWithNewResourceCheck(machine,
@@ -235,7 +238,10 @@ var MebApp = function() {
 
     // Diagram N-16
     if(req.method === httpMethods.POST) {
-      if(machine.redirect(req)) {
+      // FIXME actually redirect the user?
+      var redirectVal = machine.redirect(req);
+      checkVal(redirectVal);
+      if(redirectVal) {
         return { code: 303 }; // 303 - See Other
       } else {
         return writeWithNewResourceCheck(machine, machineState, req, urlParams);
@@ -246,7 +252,9 @@ var MebApp = function() {
     // TODO write tests
     if(req.method === httpMethods.PUT) {
       // Diagram O-14
-      if(machine.conflict(req)) {
+      var conflictVal = machine.conflict(req);
+      checkVal(conflictVal);
+      if(conflictVal) {
         return { code: 409 }; // 409 - Conflict
       }
 
