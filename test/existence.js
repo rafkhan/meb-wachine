@@ -4,7 +4,7 @@ var Meb = require('../meb');
 var MebApp = Meb.App;
 var assert = require('assert');
 var supertest = require('supertest');
-var Q = require('Q');
+var Q = require('q');
 
 // Non-responsive requests usually don't error out. This makes them.
 // Takes an optional `done` parameter that it will use to throw
