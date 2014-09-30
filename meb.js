@@ -136,6 +136,18 @@ var MebApp = function() {
     // Accept-* handling should go here
     //*********************************
     
+
+    var acceptTypes = decisions.acceptExist(req);
+    if(acceptTypes) {
+      // TODO compare with machine accept types
+    }
+
+
+    //
+    //
+    //
+    //
+    
     // Reource exists?
     // Diagram G-7
     var existVal = machine.exists(machineState, urlParams, req);
